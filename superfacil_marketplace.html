@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SuperFácil - Mercado Online</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff5f5;
+      color: #400000;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 10%;
+      background-color: #b71c1c;
+      color: white;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+    }
+
+    header h1 {
+      font-size: 1.8em;
+    }
+
+    header button {
+      background: #fff;
+      color: #b71c1c;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .products {
+      padding: 40px 10%;
+      margin-right: 320px;
+    }
+
+    .products h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #b71c1c;
+    }
+
+    .product-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .product {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .product:hover {
+      transform: translateY(-5px);
+    }
+
+    .product img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+
+    .product h4 {
+      margin: 10px 0 5px;
+    }
+
+    .product p {
+      margin: 5px 0;
+    }
+
+    .product .actions {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .product button {
+      background: #b71c1c;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .product button:hover {
+      background: #9a0007;
+    }
+
+    .counter {
+      margin-top: 8px;
+      font-size: 0.9em;
+      color: #b71c1c;
+      font-weight: bold;
+    }
+
+    #cartModal {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100%;
+      background: white;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      z-index: 1001;
+    }
+
+    #cartModal h3 {
+      margin-bottom: 10px;
+      color: #b71c1c;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .cart-item button {
+      background: #b71c1c;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      margin: 0 2px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .total {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .checkout-btn {
+      margin-top: 20px;
+      background: #b71c1c;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      background: #b71c1c;
+      color: white;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/grocery-store.png" alt="Ícone SuperFácil">
+      <h1>SuperFácil</h1>
+    </div>
+    <button id="cartButton">Meu Carrinho 🛒 <span id="cartCount">0</span></button>
+  </header>
+
+  <section class="products">
+    <h2>Produtos Disponíveis</h2>
+    <div class="product-list" id="productList"></div>
+  </section>
+
+  <div id="cartModal">
+    <h3>Seu Carrinho</h3>
+    <div id="cartItems"></div>
+    <div class="total">Total: R$ <span id="totalPrice">0.00</span></div>
+    <button class="checkout-btn" onclick="finalizarCompra()">Finalizar Compra</button>
+  </div>
+
+  <footer>
+    &copy; 2025 SuperFácil. Todos os direitos reservados.
+  </footer>
+
+  <script>
+    const products = [
+      { name: "Maçã", price: 3.99, img: "https://img.icons8.com/color/96/apple.png" },
+      { name: "Carne", price: 25.00, img: "https://img.icons8.com/color/96/steak.png" },
+      { name: "Leite", price: 4.50, img: "https://img.icons8.com/color/96/milk-bottle.png" },
+      { name: "Pão", price: 6.00, img: "https://img.icons8.com/color/96/bread.png" },
+      { name: "Água Mineral", price: 2.50, img: "https://img.icons8.com/color/96/water-bottle.png" }
+    ];
+
+    const cart = JSON.parse(localStorage.getItem("cart")) || {};
+    const cartButton = document.getElementById("cartButton");
+    const cartModal = document.getElementById("cartModal");
+    const cartItems = document.getElementById("cartItems");
+    const totalPrice = document.getElementById("totalPrice");
+    const cartCount = document.getElementById("cartCount");
+
+    function updateCart() {
+      localStorage.setItem("cart", JSON.stringify(cart));
+      cartItems.innerHTML = "";
+      let total = 0;
+      let count = 0;
+      for (const name in cart) {
+        const { price, quantity } = cart[name];
+        const item = document.createElement("div");
+        item.className = "cart-item";
+        item.innerHTML = `
+          <span>${name} x${quantity}</span>
+          <div>
+            <button onclick="changeQty('${name}', -1)">-</button>
+            <button onclick="changeQty('${name}', 1)">+</button>
+          </div>
+        `;
+        cartItems.appendChild(item);
+        total += price * quantity;
+        count += quantity;
+      }
+      totalPrice.textContent = total.toFixed(2);
+      cartCount.textContent = count;
+    }
+
+    function changeQty(name, delta) {
+      if (!cart[name]) return;
+      cart[name].quantity += delta;
+      if (cart[name].quantity <= 0) delete cart[name];
+      updateCart();
+    }
+
+    function addToCart(name, price) {
+      if (!cart[name]) cart[name] = { price, quantity: 0 };
+      cart[name].quantity++;
+      updateCart();
+    }
+
+    cartButton.onclick = () => {
+      cartModal.style.display = cartModal.style.display === "flex" ? "none" : "flex";
+    };
+
+    const productList = document.getElementById("productList");
+    products.forEach(product => {
+      const el = document.createElement("div");
+      el.className = "product";
+      el.innerHTML = `
+        <img src="${product.img}" alt="${product.name}" />
+        <h4>${product.name}</h4>
+        <p>R$ ${product.price.toFixed(2)}</p>
+        <div class="actions">
+          <button onclick="addToCart('${product.name}', ${product.price})">Adicionar</button>
+        </div>
+      `;
+      productList.appendChild(el);
+    });
+
+    function finalizarCompra() {
+      confetti();
+      alert("Compra finalizada com sucesso! Obrigado por comprar no SuperFácil!");
+      for (let item in cart) delete cart[item];
+      updateCart();
+    }
+
+    updateCart();
+  </script>
+</body>
+</html>
